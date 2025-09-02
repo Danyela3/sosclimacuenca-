@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivia sobre el Planeta</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f8ff;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            text-align: center;
+            color: #333;
+            background-image: linear-gradient(to bottom, #87ceeb, #a2d2ff);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 2.5em;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 600px;
+            border: 5px solid #4a90e2;
+            box-sizing: border-box;
+        }
+
+        .title {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 0.5em;
+            text-shadow: 1px 1px 2px #ccc;
+        }
+
+        #question-text {
+            font-size: 1.5em;
+            margin-bottom: 1.5em;
+            color: #555;
+            min-height: 3em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-grid {
+            display: grid;
+            gap: 1.2em;
+            margin-bottom: 1.5em;
+        }
+
+        .btn {
+            background-color: #81b214;
+            color: #fff;
+            border: none;
+            padding: 1.2em;
+            border-radius: 15px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            background-color: #5b810d;
+            transform: translateY(-3px);
+        }
+
+        .btn.correct {
+            background-color: #2ecc71;
+            transform: scale(1.05);
+        }
+
+        .btn.wrong {
+            background-color: #e74c3c;
+            animation: shake 0.5s;
+        }
+
+        #feedback-message {
+            min-height: 2em;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 1em;
+            transition: color 0.3s;
+        }
+
+        #score-container {
+            text-align: center;
+        }
+
+        #score-text {
+            font-size: 2em;
+            color: #2980b9;
+            font-weight: bold;
+            margin-top: 1em;
+        }
+
+        #restart-button {
+            background-color: #f39c12;
+            color: #fff;
+            border: none;
+            padding: 1em 2em;
+            border-radius: 15px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin-top: 1.5em;
+            transition: background-color 0.3s;
+        }
+
+        #restart-button:hover {
+            background-color: #e67e22;
+        }
+
+        .hide {
+            display: none;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2em;
+            }
+            #question-text {
+                font-size: 1.2em;
+            }
+            .btn {
+                font-size: 1em;
+                padding: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="title">¡A Salvar el Planeta!</h1>
+        <div id="quiz-container">
+            <h2 id="question-text"></h2>
+            <div id="answer-buttons" class="btn-grid"></div>
+            <div id="feedback-message"></div>
+        </div>
+        <div id="score-container" class="hide">
+            <h2>¡Juego Terminado!</h2>
+            <p id="score-text"></p>
+            <button id="restart-button">Jugar de Nuevo</button>
+        </div>
+    </div>
+
+    <!-- Archivos de audio. Coloca tus propios archivos .mp3 en la misma carpeta. -->
+    <audio id="correct-audio" src="correct.mp3" preload="auto"></audio>
+    <audio id="wrong-audio" src="wrong.mp3" preload="auto"></audio>
+
+    <script>
+        const questions = [
+            {
+                question: "¿Qué es el cambio climático?",
+                answers: [
+                    { text: "Un cambio en el clima que ocurre de forma natural y rápida.", correct: false },
+                    { text: "Una alteración a largo plazo del clima de la Tierra causada principalmente por la actividad humana.", correct: true },
+                    { text: "Un fenómeno meteorológico que solo ocurre en invierno.", correct: false },
+                    { text: "La variación del clima en un solo país.", correct: false }
+                ]
+            },
+            {
+                question: "¿Cuál es la forma más efectiva de reducir la contaminación por plásticos?",
+                answers: [
+                    { text: "Comprar más productos envueltos en plástico.", correct: false },
+                    { text: "Dejar el plástico en cualquier lugar para que se degrade solo.", correct: false },
+                    { text: "Reducir, Reutilizar y Reciclar (las 3 R).", correct: true },
+                    { text: "Quemar el plástico para deshacerse de él.", correct: false }
+                ]
+            },
+            {
+                question: "¿Por qué los bosques son esenciales para combatir el cambio climático?",
+                answers: [
+                    { text: "Solo sirven para dar sombra y belleza.", correct: false },
+                    { text: "Porque producen dióxido de carbono.", correct: false },
+                    { text: "Porque absorben el dióxido de carbono y liberan oxígeno.", correct: true },
+                    { text: "Porque evitan que llueva demasiado.", correct: false }
+                ]
+            },
+            {
+                question: "¿Qué gas de efecto invernadero es el más abundante en la atmósfera a causa de la actividad humana?",
+                answers: [
+                    { text: "Oxígeno.", correct: false },
+                    { text: "Nitrógeno.", correct: false },
+                    { text: "Metano.", correct: false },
+                    { text: "Dióxido de carbono (CO2).", correct: true }
+                ]
+            },
+            {
+                question: "¿Qué son los páramos y por qué son importantes?",
+                answers: [
+                    { text: "Desiertos fríos y sin vida.", correct: false },
+                    { text: "Ecosistemas que almacenan y regulan el agua, vitales para las comunidades.", correct: true },
+                    { text: "Lagos artificiales creados por el hombre.", correct: false },
+                    { text: "Zonas de cultivo de hortalizas.", correct: false }
+                ]
+            },
+            {
+                question: "¿Qué significa 'huella de carbono'?",
+                answers: [
+                    { text: "La marca que dejas al caminar sobre tierra mojada.", correct: false },
+                    { text: "La cantidad de CO2 que emite un vehículo.", correct: false },
+                    { text: "El total de gases de efecto invernadero que produce una persona, organización o evento.", correct: true },
+                    { text: "El rastro que dejan los animales al migrar.", correct: false }
+                ]
+            },
+            {
+                question: "¿Cuál es una acción simple que puedes hacer en casa para cuidar el planeta?",
+                answers: [
+                    { text: "Dejar las luces encendidas todo el día.", correct: false },
+                    { text: "Usar el auto para viajes muy cortos.", correct: false },
+                    { text: "Desconectar los electrodomésticos que no estés usando.", correct: true },
+                    { text: "Tirar la basura orgánica en bolsas de plástico.", correct: false }
+                ]
+            },
+            {
+                question: "¿Qué tipo de energía es considerada 'renovable'?",
+                answers: [
+                    { text: "Energía del carbón.", correct: false },
+                    { text: "Energía solar.", correct: true },
+                    { text: "Energía nuclear.", correct: false },
+                    { text: "Energía del petróleo.", correct: false }
+                ]
+            },
+            {
+                question: "¿Por qué es importante reducir el consumo de carne?",
+                answers: [
+                    { text: "Porque el ganado emite metano, un gas de efecto invernadero potente.", correct: true },
+                    { text: "Porque la carne es más cara que otros alimentos.", correct: false },
+                    { text: "Porque es un alimento que no aporta nada nutricionalmente.", correct: false },
+                    { text: "No tiene ningún impacto en el planeta.", correct: false }
+                ]
+            },
+            {
+                question: "¿Cuál es el principal objetivo del Acuerdo de París?",
+                answers: [
+                    { text: "Aumentar las emisiones de CO2.", correct: false },
+                    { text: "Limitar el aumento de la temperatura global a menos de 2°C.", correct: true },
+                    { text: "Prohibir el uso de automóviles en las ciudades.", correct: false },
+                    { text: "Promover el uso de plásticos de un solo uso.", correct: false }
+                ]
+            }
+        ];
+
+        const questionElement = document.getElementById('question-text');
+        const answerButtonsElement = document.getElementById('answer-buttons');
+        const quizContainer = document.getElementById('quiz-container');
+        const scoreContainer = document.getElementById('score-container');
+        const scoreText = document.getElementById('score-text');
+        const restartButton = document.getElementById('restart-button');
+        const feedbackMessage = document.getElementById('feedback-message');
+
+        const correctAudio = document.getElementById('correct-audio');
+        const wrongAudio = document.getElementById('wrong-audio');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            quizContainer.classList.remove('hide');
+            scoreContainer.classList.add('hide');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            resetState();
+            const currentQuestion = questions[currentQuestionIndex];
+            questionElement.innerText = `${currentQuestionIndex + 1}. ${currentQuestion.question}`;
+            
+            currentQuestion.answers.forEach(answer => {
+                const button = document.createElement('button');
+                button.innerText = answer.text;
+                button.classList.add('btn');
+                if (answer.correct) {
+                    button.dataset.correct = answer.correct;
+                }
+                button.addEventListener('click', selectAnswer);
+                answerButtonsElement.appendChild(button);
+            });
+        }
+
+        function resetState() {
+            feedbackMessage.textContent = '';
+            while (answerButtonsElement.firstChild) {
+                answerButtonsElement.removeChild(answerButtonsElement.firstChild);
+            }
+        }
+
+        function selectAnswer(e) {
+            const selectedButton = e.target;
+            const isCorrect = selectedButton.dataset.correct === 'true';
+
+            // Muestra retroalimentación visual y de audio
+            if (isCorrect) {
+                selectedButton.classList.add('correct');
+                feedbackMessage.textContent = '¡Correcto!';
+                feedbackMessage.style.color = '#2ecc71';
+                correctAudio.currentTime = 0;
+                correctAudio.play();
+                score++;
+            } else {
+                selectedButton.classList.add('wrong');
+                feedbackMessage.textContent = '¡Incorrecto!';
+                feedbackMessage.style.color = '#e74c3c';
+                wrongAudio.currentTime = 0;
+                wrongAudio.play();
+            }
+
+            // Deshabilita todos los botones después de una respuesta
+            Array.from(answerButtonsElement.children).forEach(button => {
+                button.disabled = true;
+                if (button.dataset.correct === 'true') {
+                    button.classList.add('correct');
+                }
+            });
+
+            // Pasa a la siguiente pregunta después de un segundo y medio
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < questions.length) {
+                    showQuestion();
+                } else {
+                    endQuiz();
+                }
+            }, 1500);
+        }
+
+        function endQuiz() {
+            quizContainer.classList.add('hide');
+            scoreContainer.classList.remove('hide');
+            scoreText.innerText = `¡Acertaste ${score} de ${questions.length} preguntas!`;
+        }
+
+        // Inicia el juego cuando se hace clic en el botón de Reiniciar
+        restartButton.addEventListener('click', startQuiz);
+
+        // Inicia el juego al cargar la página
+        window.onload = startQuiz;
+    </script>
+</body>
+</html>
